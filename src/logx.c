@@ -9,6 +9,46 @@
 #include <ctype.h>
 
 
+#ifdef IS_WINDOWS
+#include "processenv.h"
+
+
+bool expand_path(const char *orig_path, char *expanded_path,
+                 const int expanded_path_max_len) {
+    const int size_expanded = ExpandEnvironmentStrings(
+        orig_path, expanded_path, expanded_path_max_len);
+    return size_expanded != 0 && size_expanded <= expanded_path_max_len;
+}
+#endif
+
+
+#ifdef  IS_POSIX
+#include <wordexp.h>
+
+
+bool expand_path(const char *orig_path, char *expanded_path,
+                 const int expanded_path_max_len) {
+    wordexp_t p;
+
+    wordexp(orig_path, &p, WRDE_NOCMD | WRDE_UNDEF | WRDE_SHOWERR);
+    if (p.we_wordc != 1) {
+        fprintf(
+            stderr,
+            p.we_wordc < 1 ? "expanding '%s' yields nothing!\n"
+                           : "expanding '%s' yields too many (%d) results!\n",
+            orig_path,
+            p.we_wordc);
+        wordfree(&p);
+        return false;
+    }
+
+    strncpy(expanded_path, p.we_wordv[0], expanded_path_max_len);
+    wordfree(&p);
+    return true;
+}
+#endif
+
+
 #define LOGX_MAX_PRIORITY_NAME_LEN 10
 const char *logx_priority_names[] = {
     LOGX_PRIO_TRACE_STR,
@@ -38,6 +78,7 @@ const char *priority_names_colored[] = {
 };
 #endif
 
+
 bool logx_string_to_priority(Priority *priority, const char *priority_str) {
     for (int i = 0; i < LOGX_TOTAL_NUMBER_OF_PRIORITY_LEVELS; i++) {
         char priority_number[2];
@@ -62,11 +103,17 @@ const char logx_logfile_default[] = LOGX_LOGFILE_DEFAULT;
 // variables or command line arguments.
 const char *logx_logfile = logx_logfile_default;
 
+#define LOGX_LOGFILE_EXPANDED_SIZE 512
+char logx_logfile_expanded[LOGX_LOGFILE_EXPANDED_SIZE];
+
 
 void logx_init_logfile() {
     const char *env_logfile = getenv(LOGX_LOGFILE_LOCATION_ENV_VAR);
-    if (env_logfile == NULL) return;
-    logx_logfile = env_logfile;
+    if (env_logfile != NULL) logx_logfile = env_logfile;
+    if (expand_path(logx_logfile, logx_logfile_expanded,
+                    LOGX_LOGFILE_EXPANDED_SIZE))
+        return;
+    fprintf(stderr, "failed to expand log file path: '%s'!\n", logx_logfile);
 }
 
 
@@ -244,7 +291,7 @@ void logx(Priority priority, const char *tag, const char *file,
     va_end(args);
 
 #ifdef LOGX_LOG_TO_LOGFILE
-    FILE *stream = fopen(logx_logfile, "a");
+    FILE *stream = fopen(logx_logfile_expanded, "a");
     if (stream == NULL) {
         fprintf(stderr,
                 "logx error: cannot open '%s' for logging!\n",
