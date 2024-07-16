@@ -1,0 +1,4 @@
+.objdir
+bin
+.idea/
+cmake-build-*/
