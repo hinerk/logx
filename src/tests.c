@@ -2,7 +2,8 @@
 
 
 int main () {
-    logx_log_location(Emergency, "format string at end of the message: %s","test");
+    logx_log_location(Emergency,
+                      "format string at end of the message: %s","test");
     logx_emergency("format string at end of the message: %s", "test");
 
     logx_emergency("test log_emergency");
@@ -15,8 +16,10 @@ int main () {
     logx_debug("test log_debug");
     logx_trace("test log_trace");
 
-    char bytes2[] = "Hello world and such ... I need more than 16 letters";
+    const char bytes2[] = "Hello world and such ... "
+                          "I need more than 16 letters";
 #if LOGX_HEXDUMP
-    logx_hexdump(Error, (uint8_t *) bytes2, sizeof bytes2, "dumping %d bytes", 3);
+    logx_hexdump(Error, (uint8_t *) bytes2, sizeof bytes2,
+                 "dumping %d bytes", 3);
 #endif
 }

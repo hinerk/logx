@@ -154,8 +154,8 @@ void logx_get_datetime(char buffer[22]) {
 }
 #else
 void logx_get_time(char buffer[11]) {
-    time_t t = time(NULL);
-    struct tm tm = *localtime(&t);
+    const time_t t = time(NULL);
+    const struct tm tm = *localtime(&t);
     sprintf(buffer, "[%02d:%02d:%02d]",
             tm.tm_hour, tm.tm_min, tm.tm_sec);
 }
@@ -167,7 +167,7 @@ void logx_get_origin(char buffer[LOGX_ORIGIN_BUFFER_SIZE], const char *tag,
 #ifdef LOGX_LOG_TAG
     snprintf(buffer, LOGX_ORIGIN_BUFFER_SIZE, "%s", tag);
     return;
-#endif
+#else
     int printed = 0;
 
 #ifdef LOGX_LOG_SOURCE_FILE
@@ -185,6 +185,7 @@ void logx_get_origin(char buffer[LOGX_ORIGIN_BUFFER_SIZE], const char *tag,
 #ifdef LOGX_LOG_FUNC_NAME
     snprintf(&buffer[printed], LOGX_ORIGIN_BUFFER_SIZE - printed,
              "%s%s", funcname_padding, func);
+#endif
 #endif
 }
 
@@ -222,12 +223,13 @@ bool logx_threshold_is_exceeded(const Priority priority) {
  * @param[in] func A string representing the function name from which the
  *                 log message originated.
  * @param[in] msg The format string for the log message.
- * @param[in] ... Additional arguments for the format string.
+ * @param[in] args Additional arguments for the format string.
  */
 void logx_log_to_stream(FILE *fp, const bool colored, const Priority priority,
                         const bool only_log_if_threshold_is_exceeded,
                         const char *tag, const char *file, const char *line,
-                        const char* func, const char *msg, va_list args) {
+                        const char* func, const char *msg,
+                        const va_list args) {
     if (only_log_if_threshold_is_exceeded
         && !logx_threshold_is_exceeded(priority)) return;
 
@@ -274,7 +276,7 @@ void logx_log_to_stream(FILE *fp, const bool colored, const Priority priority,
 }
 
 
-void logx(Priority priority, const char *tag, const char *file,
+void logx(const Priority priority, const char *tag, const char *file,
           const char *line, const char* func, const char *msg, ...) {
     logx_init();
 
@@ -430,12 +432,11 @@ void logx_format_hexdump(char *buffer, const uint8_t *bytes,
                 bytes_to_print,
                 address);
     }
-    return;
 }
 
 
-void logx_log_hexdump(Priority priority, const char *tag, const char *file,
-                      const char *line, const char* func,
+void logx_log_hexdump(const Priority priority, const char *tag,
+                      const char *file, const char *line, const char* func,
                       const uint8_t *bytes, const int total_bytes,
                       const char *msg, ...) {
     va_list args;
@@ -455,7 +456,7 @@ void logx_log_hexdump(Priority priority, const char *tag, const char *file,
     va_end(args);
 
     const int hexdump_buffer_size =
-            ((total_bytes / LOGX_HEXDUMP_BYTES_PER_ROW) + 1)  // required rows
+            (total_bytes / LOGX_HEXDUMP_BYTES_PER_ROW + 1)  // required rows
             * LOGX_HEXDUMP_BUFFER_SIZE_ROW;
     char *hexdump_buffer = malloc(hexdump_buffer_size + 1);
     if (hexdump_buffer == NULL) {
