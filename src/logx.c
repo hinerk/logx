@@ -312,15 +312,6 @@ void logx(const Priority priority, const char *tag, const char *file,
 
 #ifdef LOGX_HEXDUMP
 
-#define LOGX_HEXDUMP_BYTES_PER_ROW 16
-#define LOGX_HEXDUMP_BUFFER_SIZE_ROW ( \
-        + 7                                   /* address + separator */ \
-        + 3 * LOGX_HEXDUMP_BYTES_PER_ROW - 1  /* logx_format_hexdump */ \
-        + 3                                   /* separator           */ \
-        + LOGX_HEXDUMP_BYTES_PER_ROW          /* bytes as ascii      */ \
-        + 1                                   /* newline             */ \
-    )
-
 /**
  * @brief writes whitespace separated bytes to buffer
  *
@@ -402,19 +393,6 @@ int logx_hexdump_format_row(char *buffer,
 }
 
 
-/**
- * @brief write canonical hexdump of bytes to buffer
- *
- * @note the user of this function has to ensure that buffer is large enough
- *       to fit the hexdump: total_rows * LOGX_HEXDUMP_BUFFER_SIZE_ROW, where
- *       total_rows = (total_bytes / LOGX_HEXDUMP_BYTES_PER_ROW) + 1
- *
- * @note intended for internal usage only.
- *
- * @param[out] buffer target buffer to which the hexdump is written
- * @param[in] bytes the bytes which shall be hexdump'ed
- * @param[in] total_bytes total number of bytes to be hexdump'ed
- */
 void logx_format_hexdump(char *buffer, const uint8_t *bytes,
                          const unsigned int total_bytes) {
     unsigned int bytes_written = 0;
@@ -455,10 +433,8 @@ void logx_log_hexdump(const Priority priority, const char *tag,
     vsprintf(formatted_msg, msg, args);
     va_end(args);
 
-    const int hexdump_buffer_size =
-            (total_bytes / LOGX_HEXDUMP_BYTES_PER_ROW + 1)  // required rows
-            * LOGX_HEXDUMP_BUFFER_SIZE_ROW;
-    char *hexdump_buffer = malloc(hexdump_buffer_size + 1);
+    const int hexdump_buffer_size = logx_hexdump_calc_buffer_size(total_bytes);
+    char *hexdump_buffer = malloc(hexdump_buffer_size);
     if (hexdump_buffer == NULL) {
         fprintf(stderr,
                 "cannot allocate memory for hexdump_buffer!\n");

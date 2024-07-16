@@ -318,6 +318,25 @@ void logx(Priority priority, const char *tag, const char *file,
 
 #ifdef LOGX_HEXDUMP
 /**
+ * @def LOGX_HEXDUMP_BYTES_PER_ROW
+ * @brief defines the displayed bytes per row
+ */
+#define LOGX_HEXDUMP_BYTES_PER_ROW 16
+
+/**
+ * @def LOGX_HEXDUMP_BUFFER_SIZE_ROW
+ * @brief the required bytes to store one row of the hexdump
+ */
+#define LOGX_HEXDUMP_BUFFER_SIZE_ROW ( \
++ 7                                   /* address + separator */ \
++ 3 * LOGX_HEXDUMP_BYTES_PER_ROW - 1  /* logx_format_hexdump */ \
++ 3                                   /* separator           */ \
++ LOGX_HEXDUMP_BYTES_PER_ROW          /* bytes as ascii      */ \
++ 1                                   /* newline             */ \
+)
+
+
+/**
  * @brief log a hexdump along with a message
  *
  * @note intended for internal usage only.
@@ -341,6 +360,30 @@ void logx_log_hexdump(Priority priority, const char *tag, const char *file,
                       const char *line, const char* func,
                       const uint8_t *bytes, int total_bytes,
                       const char *msg, ...);
+
+
+/**
+ * @def logx_hexdump_calc_buffer_size
+ * @brief calculate the buffer size required to store the formatted hexdump
+ * @param n_bytes bytes to be displayed in hexdump
+ */
+#define logx_hexdump_calc_buffer_size(n_bytes) \
+    (n_bytes / LOGX_HEXDUMP_BYTES_PER_ROW + 1) /* total rows */ \
+    * LOGX_HEXDUMP_BUFFER_SIZE_ROW + /* NULL */ 1
+
+
+/**
+ * @brief write canonical hexdump of bytes to buffer
+ *
+ * @note the buffer size required for storing the hexdump can be determined
+ *       using the `logx_hexdump_calc_buffer_size(n_bytes)` macro.
+ *
+ * @param[out] buffer target buffer to which the hexdump is written
+ * @param[in] bytes the bytes which shall be hexdump'ed
+ * @param[in] total_bytes total number of bytes to be hexdump'ed
+ */
+void logx_format_hexdump(char *buffer, const uint8_t *bytes,
+                         unsigned int total_bytes);
 
 
 #define logx_hexdump(priority, bytes, bytes_size, msg, ...) \
