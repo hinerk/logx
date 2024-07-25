@@ -461,7 +461,7 @@ void logx_format_hexdump(char *buffer, const uint8_t *bytes,
 
 #ifdef LOGX_LOG_FUNC_NAME
 #ifndef LOGX_RESERVED_SPACE_FUNC_NAME
-#define LOGX_RESERVED_SPACE_FUNC_NAME 10
+#define LOGX_RESERVED_SPACE_FUNC_NAME 20
 #endif
 #else
 #ifndef LOGX_RESERVED_SPACE_FUNC_NAME
@@ -472,7 +472,7 @@ void logx_format_hexdump(char *buffer, const uint8_t *bytes,
 
 #ifdef LOGX_LOG_SOURCE_FILE
 #ifndef LOGX_RESERVED_SPACE_SOURCE_FILE
-#define LOGX_RESERVED_SPACE_SOURCE_FILE 10
+#define LOGX_RESERVED_SPACE_SOURCE_FILE 20
 #endif
 #else
 #ifndef LOGX_RESERVED_SPACE_SOURCE_FILE
