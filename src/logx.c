@@ -258,7 +258,7 @@ void logx_log_to_stream(FILE *fp, const bool colored, const Priority priority,
     logx_get_origin(origin, tag, file, line, func);
 
     fprintf(fp,
-            "%s  %-*s  %-*s  ",
+            "%s  %*s  %-*s  ",
             datetime,
             priority_len,
             priority_name,
