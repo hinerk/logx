@@ -68,10 +68,6 @@ if (LOGX_LOGFILE_DEFAULT)
     add_compile_definitions(LOGX_LOGFILE_DEFAULT=${LOGX_LOGFILE_DEFAULT})
 endif()
 
-
-
-add_compile_options(-ffile-prefix-map=${CMAKE_SOURCE_DIR}/=)
-
 add_library(
         logx
         STATIC
