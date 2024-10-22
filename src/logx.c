@@ -171,20 +171,22 @@ void logx_get_origin(char buffer[LOGX_ORIGIN_BUFFER_SIZE], const char *tag,
     int printed = 0;
 
 #ifdef LOGX_LOG_SOURCE_FILE
+#ifdef LOGX_LOG_LINE_NUMBER
+    char file_and_line_no[1024] = {0};
+    snprintf(file_and_line_no, 1024, "%s:%s", file, line);
+    printed += snprintf(&buffer[printed], LOGX_ORIGIN_BUFFER_SIZE - printed,
+                        "%-*s", LOGX_RESERVED_SPACE_SOURCE_FILE
+                              + LOGX_RESERVED_SPACE_LINE_NUMBER,
+                        file_and_line_no);
+#else
     printed += snprintf(&buffer[printed], LOGX_ORIGIN_BUFFER_SIZE - printed,
                         "%*s", LOGX_RESERVED_SPACE_SOURCE_FILE, file);
-#ifdef LOGX_LOG_LINE_NUMBER
-    printed += snprintf(&buffer[printed], LOGX_ORIGIN_BUFFER_SIZE - printed,
-                        ":%-*s", LOGX_RESERVED_SPACE_LINE_NUMBER - 1, line);
 #endif
-    const char funcname_padding[] = " ";
-#else
-    const char funcname_padding[] = "";
 #endif
 
 #ifdef LOGX_LOG_FUNC_NAME
     snprintf(&buffer[printed], LOGX_ORIGIN_BUFFER_SIZE - printed,
-             "%s%-*s", funcname_padding, LOGX_RESERVED_SPACE_FUNC_NAME, func);
+             " %-*s", LOGX_RESERVED_SPACE_FUNC_NAME, func);
 #endif
 #endif
 }
