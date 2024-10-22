@@ -172,10 +172,10 @@ void logx_get_origin(char buffer[LOGX_ORIGIN_BUFFER_SIZE], const char *tag,
 
 #ifdef LOGX_LOG_SOURCE_FILE
     printed += snprintf(&buffer[printed], LOGX_ORIGIN_BUFFER_SIZE - printed,
-                        "%s", file);
+                        "%*s", LOGX_RESERVED_SPACE_SOURCE_FILE, file);
 #ifdef LOGX_LOG_LINE_NUMBER
     printed += snprintf(&buffer[printed], LOGX_ORIGIN_BUFFER_SIZE - printed,
-                        ":%s", line);
+                        ":%-*s", LOGX_RESERVED_SPACE_LINE_NUMBER - 1, line);
 #endif
     const char funcname_padding[] = " ";
 #else
@@ -184,7 +184,7 @@ void logx_get_origin(char buffer[LOGX_ORIGIN_BUFFER_SIZE], const char *tag,
 
 #ifdef LOGX_LOG_FUNC_NAME
     snprintf(&buffer[printed], LOGX_ORIGIN_BUFFER_SIZE - printed,
-             "%s%s", funcname_padding, func);
+             "%s%-*s", funcname_padding, LOGX_RESERVED_SPACE_FUNC_NAME, func);
 #endif
 #endif
 }
@@ -233,8 +233,6 @@ void logx_log_to_stream(FILE *fp, const bool colored, const Priority priority,
     if (only_log_if_threshold_is_exceeded
         && !logx_threshold_is_exceeded(priority)) return;
 
-
-
 #ifdef LOGX_COLORED_OUTPUT
     const int priority_len = colored ? LOGX_MAX_PRIORITY_NAME_LEN_COLORED
                                      : LOGX_MAX_PRIORITY_NAME_LEN;
@@ -244,7 +242,6 @@ void logx_log_to_stream(FILE *fp, const bool colored, const Priority priority,
     const int priority_len = LOGX_MAX_PRIORITY_NAME_LEN;
     const char *priority_name = logx_priority_names[priority];
 #endif
-
 
 #ifdef LOGX_LOG_DATE
     char datetime[22];
